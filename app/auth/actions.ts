@@ -39,7 +39,7 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/login?message=Registrasi berhasil! Silakan login.')
+  redirect('/login?message=Registrasi berhasil! Cek Email dan Silakan login.')
 }
 export async function signout() {
   const supabase = await createClient()
