@@ -1,14 +1,12 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { signout } from '../auth/actions' 
+import Navbar from '@/components/Navbar' 
 
 export default async function Dashboard() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: announcements } = await supabase
     .from('announcements')
@@ -16,34 +14,50 @@ export default async function Dashboard() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <nav className="bg-gradient-to-r from-blue-300 to-teal-400 shadow p-4 flex justify-between items-center">
-        <h1 className="font-bold text-xl text-blue-800">Employee</h1>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{user.email}</span>
-          <form action={signout}>
-            <button className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">
-              Logout
-            </button>
-          </form>
-        </div>
-      </nav>
-      <main className="p-8 w-full mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-blue-800">Pengumuman Terbaru</h2>
+    <div className="min-h-screen bg-gray-100">
+      <Navbar userEmail={user.email || 'User'} />
 
-        <div className="grid gap-4">
+      <main className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-extrabold text-gray-900">Announcement</h1>
+          <span className="text-sm text-gray-500 font-medium bg-white px-3 py-1 rounded-full border shadow-sm">
+            {announcements?.length || 0} Newest Info
+          </span>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {announcements?.map((item) => (
-            <div key={item.id} className="bg-white p-6 rounded-lg shadow border border-gray-100">
-              <h3 className="text-lg font-bold text-gray-800">{item.title}</h3>
-              <p className="text-gray-600 mt-2">{item.content}</p>
-              <p className="text-xs text-gray-400 mt-4">
-                Diposting pada: {new Date(item.created_at).toLocaleDateString()}
-              </p>
+            <div key={item.id} className="bg-white overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 flex flex-col">
+              <div className="p-6 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                    Info
+                  </span>
+                  <span className="text-xs text-gray-500 font-medium">
+                    {new Date(item.created_at).toLocaleDateString('id-ID', {
+                      day: 'numeric', month: 'short', year: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight">
+                  {item.title}
+                </h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {item.content}
+                </p>
+              </div>
+              <div className="bg-gray-50 px-6 py-3 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 text-right">
+                  Diterbitkan oleh Admin
+                </p>
+              </div>
             </div>
           ))}
 
           {(!announcements || announcements.length === 0) && (
-            <p className='text-gray-400'>Tidak ada pengumuman saat ini.</p>
+            <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+               <p className="text-gray-500">Belum ada pengumuman.</p>
+            </div>
           )}
         </div>
       </main>
